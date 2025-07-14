@@ -14,7 +14,12 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+import os
 
+if os.getenv('RUNNING_IN_DOCKER') == 'yes':
+    DB_HOST = 'postgres'
+else:
+    DB_HOST = 'localhost'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -37,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'properties',
+    'django_redis',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +82,15 @@ WSGI_APPLICATION = 'alx_backend_caching_property_listings.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+
         'NAME': 'property_db',
         'USER': 'property_user',
         'PASSWORD': 'property_pass',
         'HOST': 'postgres',
+        'NAME': 'property_db',  # string here, NOT a Path object
+        'USER': 'property_user',
+        'PASSWORD': 'property_pass',
+        'HOST': DB_HOST, # 'localhost' or 'postgres' if running in Docker
         'PORT': '5432',
     }
 }
@@ -123,3 +135,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# alx_backend_caching_property_listings/settings.py
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
